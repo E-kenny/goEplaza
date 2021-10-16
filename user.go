@@ -5,12 +5,13 @@ import (
 )
 
 type User struct {
-	Id                          uuid.UUID
-	FirstName, LastName         string
-	Phone                       int
-	Email, ProfilePhoto, Status string
-
-	Created_at, Updated_at uuid.Time
+	Id         uuid.UUID
+	FirstName  string    `json:"firstname"`
+	LastName   string    `json:"lastname"`
+	Email      string    `json:"email"`
+	Role       string    `json:"role"`
+	Created_at uuid.Time `json:"created_at"`
+	Updated_at uuid.Time `json:"updated_at"`
 }
 
 type UserService interface {
