@@ -12,20 +12,20 @@ type SqlUserService struct {
 	DB *sql.DB
 }
 
-func (user SqlUserService) CreateUser(u *eplaza.User) error {
+func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 	//Get connection
-	db := user.DB
+	db := dbUser.DB
 	//Get uuid values
-	id := fmt.Sprintln(uuid.New().String())
-	//created_at:=fmt.Sprintln(uuid.)
-	//updated_at:=fmt.Sprintln(uuid.)
+	id := fmt.Sprintln(uuid.NewString())
+	created_at := fmt.Sprintln(uuid.GetTime())
+	updated_at := fmt.Sprintln(uuid.GetTime())
 	//SQL query
-	stmt, err := db.Prepare("INSERT INTO user (Id, firstName, lastName, email, profile , status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ? )")
+	stmt, err := db.Prepare("INSERT INTO users (Id, firstName, lastName, email, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ? )")
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 		return err
 	}
-	_, err = stmt.Exec(id)
+	_, err = stmt.Exec(id, user.FirstName, user.LastName, user.Email, user.Role, created_at, updated_at)
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 		return err

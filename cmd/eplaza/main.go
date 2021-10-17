@@ -1,14 +1,10 @@
 package main
 
 import (
-	"log"
-	"os"
-
+	"github.com/E-kenny/eplaza/http"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	a := os.Getenv("DBNAME")
-	log.Println(a)
-	//http.App()
+	http.App()
 }
