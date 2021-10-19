@@ -29,7 +29,6 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	//declare a UserService interface variable
 	var conn eplaza.UserService = us
-	//Assign UserService with an interface value
 
 	//Create User
 	err = conn.CreateUser(&user)

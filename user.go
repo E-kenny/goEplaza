@@ -1,6 +1,8 @@
 package eplaza
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -10,8 +12,8 @@ type User struct {
 	LastName   string    `json:"lastname"`
 	Email      string    `json:"email"`
 	Role       string    `json:"role"`
-	Created_at uuid.Time `json:"created_at"`
-	Updated_at uuid.Time `json:"updated_at"`
+	Created_at time.Time `json:"created_at"`
+	Updated_at time.Time `json:"updated_at"`
 }
 
 type UserService interface {
