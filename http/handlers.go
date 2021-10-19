@@ -16,11 +16,15 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		fmt.Println(err.Error())
+		w.WriteHeader(400)
+		w.Write([]byte("Bad Request"))
 	}
 	//Create database connection
 	db, err := database.Connection()
 	if err != nil {
 		fmt.Println(err.Error())
+		w.WriteHeader(500)
+		w.Write([]byte("Can Not Connect To Database"))
 	}
 	//Assign SqlUserService with the db connection
 	us := database.SqlUserService{
@@ -34,6 +38,8 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	err = conn.CreateUser(&user)
 	if err != nil {
 		fmt.Println(err.Error())
+		w.WriteHeader(500)
+		w.Write([]byte("Can Not Create User"))
 
 	} else {
 		w.Write([]byte("User Created Successfully!"))
