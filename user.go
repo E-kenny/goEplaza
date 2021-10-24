@@ -3,6 +3,7 @@ package eplaza
 import (
 	"time"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
 )
 
@@ -11,9 +12,18 @@ type User struct {
 	FirstName  string    `json:"firstname"`
 	LastName   string    `json:"lastname"`
 	Email      string    `json:"email"`
+	Password   string    `json:"password"`
 	Role       string    `json:"role"`
 	Created_at time.Time `json:"created_at"`
 	Updated_at time.Time `json:"updated_at"`
+}
+
+func (a User) Validate() error {
+	return validation.ValidateStruct(&a,
+		// Street cannot be empty, and the length must between 5 and 50
+		validation.Field(&a.Email, validation.Required),
+		validation.Field(&a.Password, validation.Required, validation.Length(7, 50)),
+	)
 }
 
 type UserService interface {

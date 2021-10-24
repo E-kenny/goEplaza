@@ -18,12 +18,12 @@ func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 	//Get uuid values
 	id := fmt.Sprintln(uuid.NewString())
 	//SQL query
-	stmt, err := db.Prepare("INSERT INTO users (Id, firstName, lastName, email, role) VALUES (?, ?, ?, ?, ? )")
+	stmt, err := db.Prepare("INSERT INTO users (Id, firstName, lastName, email, password, role) VALUES (?, ?, ?, ?, ?, ? )")
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 		return err
 	}
-	_, err = stmt.Exec(id, user.FirstName, user.LastName, user.Email, user.Role)
+	_, err = stmt.Exec(id, user.FirstName, user.LastName, user.Email, user.Password, user.Role)
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 		return err
