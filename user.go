@@ -20,8 +20,9 @@ type User struct {
 
 func (a User) Validate() error {
 	return validation.ValidateStruct(&a,
-		// Street cannot be empty, and the length must between 5 and 50
 		validation.Field(&a.Email, validation.Required),
+		// Password cannot be empty, and the length must between 5 and 50
+
 		validation.Field(&a.Password, validation.Required, validation.Length(7, 50)),
 	)
 }

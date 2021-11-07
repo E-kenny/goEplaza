@@ -30,20 +30,32 @@ func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 	}
 	return nil
 }
-func (user SqlUserService) GetUser(id int) eplaza.User {
-
-	return eplaza.User{}
+func (dbUser SqlUserService) GetUser(id int) eplaza.User {
+	var user eplaza.User
+	//Get connection
+	db := dbUser.DB
+	//statement
+	stmt, err := db.Prepare("SELECT * FROM users WHERE id=?")
+	if err != nil {
+		fmt.Printf("%v", err.Error())
+	}
+	err = stmt.QueryRow(id).Scan(user.Id, user.FirstName, user.LastName, user.Email, user.Role, user.Created_at, user.Updated_at)
+	if err != nil {
+		fmt.Printf("%v", err.Error())
+	}
+	return user
 }
-func (user SqlUserService) GetAllUsers() []eplaza.User {
+
+func (dbUser SqlUserService) GetAllUsers() []eplaza.User {
 
 	return []eplaza.User{}
 }
 
-func (user SqlUserService) UpdateUser(id int) error {
+func (dbUser SqlUserService) UpdateUser(id int) error {
 
 	return nil
 }
-func (user SqlUserService) DeleteUser(id int) error {
+func (dbUser SqlUserService) DeleteUser(id int) error {
 
 	return nil
 }

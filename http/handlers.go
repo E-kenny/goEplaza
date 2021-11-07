@@ -16,7 +16,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(`{"message":` + err.Error() + "}"))
 
 	}
 	//Validate the data
@@ -24,32 +24,34 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	//Create database connection
 	if err != nil {
 		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(`{"message":` + err.Error() + "}"))
 	} else {
 		db, err := database.Connection()
 		if err != nil {
 			w.WriteHeader(500)
-			w.Write([]byte(err.Error()))
+			w.Write([]byte(`{"message":` + err.Error() + "}"))
 
 		}
 		//Assign SqlUserService with the db connection
-		us := database.SqlUserService{
+		conn := database.SqlUserService{
 			DB: db,
 		}
 		defer db.Close()
-		//declare a UserService interface variable
-		var conn eplaza.UserService = us
 
 		//Create User
 		err = conn.CreateUser(&user)
 		if err != nil {
 			w.WriteHeader(500)
-			w.Write([]byte(err.Error()))
+			w.Write([]byte(`{"message":` + err.Error() + "}"))
 
 		} else {
-			w.Write([]byte("User Created Successfully!"))
+			w.Write([]byte(`{"message": "User created successfully"}`))
 		}
 
 	}
+
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
 
 }
