@@ -1,15 +1,15 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/E-kenny/eplaza"
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 type SqlUserService struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }
 
 func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
@@ -18,31 +18,37 @@ func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 	//Get uuid values
 	id := fmt.Sprintln(uuid.NewString())
 	//SQL query
-	stmt, err := db.Prepare("INSERT INTO users (Id, firstName, lastName, email, password, role) VALUES (?, ?, ?, ?, ?, ? )")
+
+	_, err := db.NamedExec(`INSERT INTO users (id, firstName, lastName, email, password, role) VALUES (:id, :first, :last, :email, :pass, :role )`,
+		map[string]interface{}{
+			"id":    id,
+			"first": user.FirstName,
+			"last":  user.LastName,
+			"email": user.Email,
+			"pass":  user.Password,
+			"role":  user.Role,
+		})
+
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 		return err
 	}
-	_, err = stmt.Exec(id, user.FirstName, user.LastName, user.Email, user.Password, user.Role)
-	if err != nil {
-		fmt.Printf("%v", err.Error())
-		return err
-	}
+
 	return nil
 }
-func (dbUser SqlUserService) GetUser(id int) eplaza.User {
-	var user eplaza.User
+
+func (dbUser SqlUserService) GetUser(id string) eplaza.User {
+	var user = eplaza.User{}
+
 	//Get connection
 	db := dbUser.DB
+
 	//statement
-	stmt, err := db.Prepare("SELECT * FROM users WHERE id=?")
+	err := db.Get(&user, "SELECT * FROM users WHERE id=?", id)
 	if err != nil {
 		fmt.Printf("%v", err.Error())
 	}
-	err = stmt.QueryRow(id).Scan(user.Id, user.FirstName, user.LastName, user.Email, user.Role, user.Created_at, user.Updated_at)
-	if err != nil {
-		fmt.Printf("%v", err.Error())
-	}
+
 	return user
 }
 

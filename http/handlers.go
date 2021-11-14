@@ -6,6 +6,7 @@ import (
 
 	"github.com/E-kenny/eplaza"
 	"github.com/E-kenny/eplaza/database"
+	"github.com/go-chi/chi/v5"
 )
 
 func createUser(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +53,28 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
+func getUser(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "userID")
+	// fetch `"key"` from the request context
+	// ctx := r.Context()
+	// key := ctx.Value("key").(string)
+
+	db, err := database.Connection()
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(`{"message":` + err.Error() + "}"))
+
+	}
+
+	//Assign SqlUserService with the db connection
+	conn := database.SqlUserService{
+		DB: db,
+	}
+
+	//Get A User
+	user := conn.GetUser(userID)
+
+	// respond to the client
+	json.NewEncoder(w).Encode(user)
 
 }

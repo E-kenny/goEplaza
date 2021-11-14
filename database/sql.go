@@ -1,13 +1,13 @@
 package database
 
 import (
-	"database/sql"
 	"os"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 )
 
-func Connection() (*sql.DB, error) {
+func Connection() (*sqlx.DB, error) {
 	//capture connection properties
 	cfg := mysql.Config{
 		User:   os.Getenv("DBUSER"),
@@ -18,7 +18,8 @@ func Connection() (*sql.DB, error) {
 	}
 
 	//Get database handle
-	db, err := sql.Open("mysql", cfg.FormatDSN())
+
+	db, err := sqlx.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		return nil, err
 	}

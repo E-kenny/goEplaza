@@ -11,6 +11,6 @@ func App() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Put("/createUser", createUser)
-	r.Get("/User", GetUser)
+	r.Get("/user/{userID}", getUser)
 	http.ListenAndServe(":3000", r)
 }
