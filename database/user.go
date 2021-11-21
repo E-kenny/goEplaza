@@ -70,7 +70,8 @@ func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
 
 func (dbUser SqlUserService) UpdateUser(user *eplaza.User) error {
 
-	_, err := dbUser.DB.Queryx("UPDATE users SET firstname =? , lastname = ?, WHERE id=?", user.FirstName, user.LastName, user.Id)
+	_, err := dbUser.DB.Queryx(`UPDATE users SET firstname = ? , lastname = ? WHERE id=?`, user.FirstName, user.LastName, user.Id)
+
 	if err != nil {
 		return err
 	}
