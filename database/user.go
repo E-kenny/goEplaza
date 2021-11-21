@@ -37,7 +37,7 @@ func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 	return nil
 }
 
-func (dbUser SqlUserService) GetUser(id string) eplaza.User {
+func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
 	var user = eplaza.User{}
 
 	//Get connection
@@ -46,22 +46,40 @@ func (dbUser SqlUserService) GetUser(id string) eplaza.User {
 	//statement
 	err := db.Get(&user, "SELECT * FROM users WHERE id=?", id)
 	if err != nil {
-		fmt.Printf("%v", err.Error())
+
+		return user, err
 	}
 
-	return user
+	return user, nil
 }
 
-func (dbUser SqlUserService) GetAllUsers() []eplaza.User {
+func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
+	users := []eplaza.User{}
 
-	return []eplaza.User{}
+	//Get connection
+	db := dbUser.DB
+
+	err := db.Select(&users, "SELECT * FROM users ORDER BY firstname ASC")
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(users)
+
+	return users, nil
 }
 
-func (dbUser SqlUserService) UpdateUser(id int) error {
+func (dbUser SqlUserService) UpdateUser(user *eplaza.User) error {
 
+	_, err := dbUser.DB.Queryx("UPDATE users SET firstname =? , lastname = ?, WHERE id=?", user.FirstName, user.LastName, user.Id)
+	if err != nil {
+		return err
+	}
 	return nil
 }
-func (dbUser SqlUserService) DeleteUser(id int) error {
-
+func (dbUser SqlUserService) DeleteUser(id string) error {
+	_, err := dbUser.DB.Queryx("DELETE FROM users WHERE id=?", id)
+	if err != nil {
+		return err
+	}
 	return nil
 }

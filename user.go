@@ -28,11 +28,11 @@ type UserService interface {
 	//create user
 	CreateUser(u *User) error
 	//get user
-	GetUser(id string) User
+	GetUser(id string) (User, error)
 	//Get all users
-	GetAllUsers() []User
+	GetAllUsers() ([]User, error)
 	//update user
-	UpdateUser(id int) error
+	UpdateUser(id *User) error
 	//delete user
-	DeleteUser(id int) error
+	DeleteUser(id string) error
 }
