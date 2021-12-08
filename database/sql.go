@@ -15,6 +15,7 @@ func Connection() (*sqlx.DB, error) {
 		Net:    "tcp",
 		Addr:   os.Getenv("HOST"),
 		DBName: os.Getenv("DBNAME"),
+		AllowNativePasswords: true,
 	}
 
 	//Get database handle

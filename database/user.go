@@ -59,7 +59,7 @@ func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
 	//Get connection
 	db := dbUser.DB
 
-	err := db.Select(&users, "SELECT * FROM users ORDER BY firstname ASC")
+	err := db.Select(&users, "SELECT * FROM users ORDER BY firstName ASC")
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
 
 func (dbUser SqlUserService) UpdateUser(user *eplaza.User) error {
 
-	_, err := dbUser.DB.Queryx(`UPDATE users SET firstname = ? , lastname = ? WHERE id=?`, user.FirstName, user.LastName, user.Id)
+	_, err := dbUser.DB.Queryx(`UPDATE users SET firstName = ? , lastName = ? WHERE id=?`, user.FirstName, user.LastName, user.Id)
 
 	if err != nil {
 		return err
