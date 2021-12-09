@@ -5,14 +5,14 @@ import (
 )
 
 type User struct {
-	Id         string `json:"id"`
-	FirstName  string `json:"firstName"`
-	LastName   string `json:"lastName"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	Role       string `json:"role"`
-	Created_at string `json:"created_at"`
-	Updated_at string `json:"updated_at"`
+	Id         string `json:"id" db:"id"`
+	FirstName  string `json:"firstName" db:"firstName"`
+	LastName   string `json:"lastName" db:"lastName"`
+	Email      string `json:"email" db:"email"`
+	Password   string `json:"password" db:"password"`
+	Role       string `json:"role" db:"role"`
+	Created_at string `json:"created_at" db:"created_at,omitempty"`
+	Updated_at string `json:"updated_at" db:"updated_at,omitempty"`
 }
 
 func (a User) Validate() error {
