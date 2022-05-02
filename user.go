@@ -35,4 +35,13 @@ type UserService interface {
 	UpdateUser(id *User) error
 	//delete user
 	DeleteUser(id string) error
+	//Sign in user
+	SignIn(user Auth) string
+}
+
+//claims object
+type Auth struct {
+	Id       string
+	Email    string
+	Password string
 }

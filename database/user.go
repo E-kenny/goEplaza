@@ -2,24 +2,78 @@ package database
 
 import (
 	"fmt"
-
 	"github.com/E-kenny/eplaza"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"os"
 )
 
 type SqlUserService struct {
 	DB *sqlx.DB
 }
 
+//signing and validating key
+var hmacSampleSecret []byte
+
+func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
+	var dbDetails eplaza.Auth
+	//statement
+	err := dbUser.DB.Get(&dbDetails, "SELECT id, password FROM users WHERE email=?", auth.Email)
+	if err != nil {
+		return "User does not exist", err
+	} else if dbDetails.Password != auth.Password {
+		return "Wrong password", err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email":    dbDetails.Password,
+		"password": dbDetails.Password,
+	})
+
+	hmacSampleSecret = []byte(os.Getenv("KEY"))
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString(hmacSampleSecret)
+
+	if err != nil {
+		return "Can't sign", err
+	}
+
+	return tokenString, nil
+}
+
+func Auth(tokenString string)(eplaza.Auth, error){
+	var Details eplaza.Auth
+	hmacSampleSecret = []byte(os.Getenv("KEY"))
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return hmacSampleSecret, nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		Details.Email=claims["email"].(string)
+		Details.Password=claims["password"].(string)
+		
+	} else {
+		return Details, err
+	}
+
+	return Details, nil
+}
+
 func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
-	//Get connection
-	db := dbUser.DB
+
 	//Get uuid values
 	id := fmt.Sprintln(uuid.NewString())
 	//SQL query
 
-	_, err := db.NamedExec(`INSERT INTO users (id, firstName, lastName, email, password, role) VALUES (:id, :first, :last, :email, :pass, :role )`,
+	_, err := dbUser.DB.NamedExec(`INSERT INTO users (id, firstName, lastName, email, password, role) VALUES (:id, :first, :last, :email, :pass, :role )`,
 		map[string]interface{}{
 			"id":    id,
 			"first": user.FirstName,
@@ -40,11 +94,8 @@ func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
 	var user = eplaza.User{}
 
-	//Get connection
-	db := dbUser.DB
-
 	//statement
-	err := db.Get(&user, "SELECT * FROM users WHERE id=?", id)
+	err := dbUser.DB.Get(&user, "SELECT * FROM users WHERE id=?", id)
 	if err != nil {
 
 		return user, err
@@ -56,10 +107,7 @@ func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
 func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
 	users := []eplaza.User{}
 
-	//Get connection
-	db := dbUser.DB
-
-	err := db.Select(&users, "SELECT * FROM users ORDER BY firstName ASC")
+	err := dbUser.DB.Select(&users, "SELECT * FROM users ORDER BY firstName ASC")
 	if err != nil {
 		return nil, err
 	}

@@ -9,6 +9,41 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+func signIn(w http.ResponseWriter, r *http.Request) {
+	//auth struct
+	var auth eplaza.Auth
+	//Decode the request body
+	err := json.NewDecoder(r.Body).Decode(&auth)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(`{"message":` + err.Error() + "}"))
+
+	}
+	//Create database connection
+	db, err := database.Connection()
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(`{"message":` + err.Error() + "}"))
+	}
+
+	//Assign SqlUserService with the db connection
+	conn := database.SqlUserService{
+		DB: db,
+	}
+	defer db.Close()
+	//call the SignIn method
+	token, err := conn.SignIn(auth)
+
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(`{"message":` + err.Error() + "}"))
+
+	} else {
+		w.Write([]byte(token))
+	}
+
+}
+
 func createUser(w http.ResponseWriter, r *http.Request) {
 
 	//User struct
@@ -22,6 +57,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	}
 	//Validate the data
 	err = user.Validate()
+
 	//Create database connection
 	if err != nil {
 		w.WriteHeader(400)
