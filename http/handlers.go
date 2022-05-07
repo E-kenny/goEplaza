@@ -44,6 +44,11 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func auth(w http.Handler) (http.Handler) {
+	
+	return w
+}
+
 func createUser(w http.ResponseWriter, r *http.Request) {
 
 	//User struct

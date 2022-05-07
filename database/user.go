@@ -2,11 +2,12 @@ package database
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/E-kenny/eplaza"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"os"
 )
 
 type SqlUserService struct {
@@ -27,7 +28,8 @@ func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email":    dbDetails.Password,
+		"id":       dbDetails.Id,
+		"email":    dbDetails.Email,
 		"password": dbDetails.Password,
 	})
 
@@ -42,7 +44,7 @@ func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
 	return tokenString, nil
 }
 
-func Auth(tokenString string)(eplaza.Auth, error){
+func Auth(tokenString string) (eplaza.Auth, error) {
 	var Details eplaza.Auth
 	hmacSampleSecret = []byte(os.Getenv("KEY"))
 
@@ -57,9 +59,10 @@ func Auth(tokenString string)(eplaza.Auth, error){
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		Details.Email=claims["email"].(string)
-		Details.Password=claims["password"].(string)
-		
+		Details.Id = claims["id"].(string)
+		Details.Email = claims["email"].(string)
+		Details.Password = claims["password"].(string)
+
 	} else {
 		return Details, err
 	}
@@ -73,7 +76,7 @@ func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 	id := fmt.Sprintln(uuid.NewString())
 	//SQL query
 
-	_, err := dbUser.DB.NamedExec(`INSERT INTO users (id, firstName, lastName, email, password, role) VALUES (:id, :first, :last, :email, :pass, :role )`,
+	_, err := dbUser.DB.NamedExec(`INSERT INTO users (id, first_name, last_name, email, password, role) VALUES (:id, :first, :last, :email, :pass, :role )`,
 		map[string]interface{}{
 			"id":    id,
 			"first": user.FirstName,
@@ -107,7 +110,7 @@ func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
 func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
 	users := []eplaza.User{}
 
-	err := dbUser.DB.Select(&users, "SELECT * FROM users ORDER BY firstName ASC")
+	err := dbUser.DB.Select(&users, "SELECT * FROM users ORDER BY first_name ASC")
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +121,7 @@ func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
 
 func (dbUser SqlUserService) UpdateUser(user *eplaza.User) error {
 
-	_, err := dbUser.DB.Queryx(`UPDATE users SET firstName = ? , lastName = ? WHERE id=?`, user.FirstName, user.LastName, user.Id)
+	_, err := dbUser.DB.Queryx(`UPDATE users SET first_name = ? , last_name = ? WHERE id=?`, user.FirstName, user.LastName, user.Id)
 
 	if err != nil {
 		return err
