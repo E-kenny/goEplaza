@@ -10,22 +10,26 @@ import (
 
 func App() {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger, auth)
-	r.Post("/signIn", signIn)
+	r.Use(middleware.Logger)
 
 	// RESTy routes for "articles" resource
-	r.Route("/users", func(r chi.Router) {
-		r.Use(auth)
-		r.Post("/", createUser)
-		r.Get("/", getAllUsers)
+	r.Route("/", func(r chi.Router) {
+		r.Post("/signIn", signIn)
 
-		// Subrouters:
-		r.Route("/{userID}", func(r chi.Router) {
+		r.Route("/users", func(r chi.Router) {
 			r.Use(auth)
-			r.Get("/", getUser)
-			r.Patch("/", updateUser)
-			r.Delete("/", deleteUser)
+			r.Post("/", createUser)
+			r.Get("/", getAllUsers)
+
+			// Subrouters:
+			r.Route("/{userID}", func(r chi.Router) {
+				r.Get("/", getUser)
+				r.Patch("/", updateUser)
+				r.Delete("/", deleteUser)
+			})
+
 		})
+
 	})
 	http.ListenAndServe(":"+os.Getenv("PORT"), r)
 }

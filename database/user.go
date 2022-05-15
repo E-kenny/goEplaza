@@ -44,7 +44,7 @@ func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
 	return tokenString, nil
 }
 
-func Auth(tokenString string) (eplaza.Auth, error) {
+func (dbUser SqlUserService) Auth(tokenString string) (eplaza.Auth, error) {
 	var Details eplaza.Auth
 	hmacSampleSecret = []byte(os.Getenv("KEY"))
 
@@ -58,15 +58,20 @@ func Auth(tokenString string) (eplaza.Auth, error) {
 		return hmacSampleSecret, nil
 	})
 
+	if err != nil {
+		return eplaza.Auth{}, err
+	}
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		Details.Id = claims["id"].(string)
 		Details.Email = claims["email"].(string)
 		Details.Password = claims["password"].(string)
 
 	} else {
-		return Details, err
+		return eplaza.Auth{}, err
 	}
 
+	// return Details, nil
 	return Details, nil
 }
 

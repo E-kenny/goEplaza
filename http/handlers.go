@@ -2,8 +2,9 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
-
+	"strings"
 	"github.com/E-kenny/eplaza"
 	"github.com/E-kenny/eplaza/database"
 	"github.com/go-chi/chi/v5"
@@ -36,7 +37,7 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(500)
-		w.Write([]byte(`{"message":` + err.Error() + "}"))
+		w.Write([]byte(`{"message":` + err.Error() + ", " + token + "}"))
 
 	} else {
 		w.Write([]byte(token))
@@ -44,9 +45,31 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func auth(w http.Handler) (http.Handler) {
-	
-	return w
+func auth(h http.Handler) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		RequestToken :=r.Header.Get("Authorization")
+		RequestToken = strings.Split(RequestToken, "Bearer ")[1]
+	db, err := database.Connection()
+		if err != nil {
+			fmt.Sprintln("%w", err)
+		}
+		//Assign SqlUserService with the db connection
+		conn := database.SqlUserService{
+			DB: db,
+		}
+
+		defer db.Close()
+
+		_ , err = conn.Auth(RequestToken)
+
+		if err != nil {
+			panic(err)
+		}else{
+			h.ServeHTTP(w,r)
+		}
+
+		
+	})
 }
 
 func createUser(w http.ResponseWriter, r *http.Request) {
