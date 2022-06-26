@@ -3,13 +3,16 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
+
 	"github.com/E-kenny/eplaza"
 	"github.com/E-kenny/eplaza/database"
 	"github.com/go-chi/chi/v5"
 )
 
+//This handler log in the user
 func signIn(w http.ResponseWriter, r *http.Request) {
 	//auth struct
 	var auth eplaza.Auth
@@ -18,7 +21,6 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
-
 	}
 	//Create database connection
 	db, err := database.Connection()
@@ -45,11 +47,12 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func auth(h http.Handler) http.Handler{
+//This is the middleware That authorizes users
+func auth(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		RequestToken :=r.Header.Get("Authorization")
+		RequestToken := r.Header.Get("Authorization")
 		RequestToken = strings.Split(RequestToken, "Bearer ")[1]
-	db, err := database.Connection()
+		db, err := database.Connection()
 		if err != nil {
 			fmt.Sprintln("%w", err)
 		}
@@ -60,21 +63,49 @@ func auth(h http.Handler) http.Handler{
 
 		defer db.Close()
 
-		_ , err = conn.Auth(RequestToken)
+		err = conn.Auth(RequestToken)
 
 		if err != nil {
-			panic(err)
-		}else{
-			h.ServeHTTP(w,r)
+			log.Fatal(err)
+		} else {
+			h.ServeHTTP(w, r)
 		}
 
-		
 	})
 }
 
-func createUser(w http.ResponseWriter, r *http.Request) {
+//This is the middleware That authorizes users
+func authOne(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		db, err := database.Connection()
+		if err != nil {
+			fmt.Sprintln("%w", err)
+		}
+		//Assign SqlUserService with the db connection
+		conn := database.SqlUserService{
+			DB: db,
+		}
 
-	//User struct
+		defer db.Close()
+		//extract user id
+		userID := chi.URLParam(r, "userID")
+
+		//AuthOne method
+		err = conn.AuthOne(userID)
+
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			h.ServeHTTP(w, r)
+		}
+
+	})
+}
+
+//This handler creates a new user
+func signUp(w http.ResponseWriter, r *http.Request) {
+
+	//User structk
 	var user eplaza.User
 	//Decode the request body
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -104,7 +135,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 		defer db.Close()
 
 		//Create User
-		err = conn.CreateUser(&user)
+		err = conn.SignUp(&user)
 		if err != nil {
 			w.WriteHeader(500)
 			w.Write([]byte(`{"message":` + err.Error() + "}"))
@@ -117,6 +148,7 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//This handler gets a user
 func getUser(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 	// fetch `"key"` from the request context
@@ -148,6 +180,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//This handler all users
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	db, err := database.Connection()
 	if err != nil {
@@ -169,6 +202,7 @@ func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//This handler updates a user
 func updateUser(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 	// fetch `"key"` from the request context
@@ -221,6 +255,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//This handler deletes user
 func deleteUser(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 	// fetch `"key"` from the request context

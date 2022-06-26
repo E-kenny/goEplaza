@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -15,14 +16,15 @@ func App() {
 	// RESTy routes for "articles" resource
 	r.Route("/", func(r chi.Router) {
 		r.Post("/signIn", signIn)
+		r.Post("/signUp", signUp)
 
 		r.Route("/users", func(r chi.Router) {
 			r.Use(auth)
-			r.Post("/", createUser)
 			r.Get("/", getAllUsers)
 
 			// Subrouters:
 			r.Route("/{userID}", func(r chi.Router) {
+				r.Use(authOne)
 				r.Get("/", getUser)
 				r.Patch("/", updateUser)
 				r.Delete("/", deleteUser)
@@ -31,5 +33,6 @@ func App() {
 		})
 
 	})
+	fmt.Println("server is running")
 	http.ListenAndServe(":"+os.Getenv("PORT"), r)
 }

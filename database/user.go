@@ -17,20 +17,26 @@ type SqlUserService struct {
 //signing and validating key
 var hmacSampleSecret []byte
 
+//Authenticated data
+var authDetail eplaza.Auth
+
+
+var user eplaza.User
+
 func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
-	var dbDetails eplaza.Auth
+	var dbdetail eplaza.Auth
 	//statement
-	err := dbUser.DB.Get(&dbDetails, "SELECT id, password FROM users WHERE email=?", auth.Email)
+	err := dbUser.DB.Get(&dbdetail, "SELECT id, email, password FROM users WHERE email=?", auth.Email)
 	if err != nil {
 		return "User does not exist", err
-	} else if dbDetails.Password != auth.Password {
+	} else if dbdetail.Password != auth.Password {
 		return "Wrong password", err
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":       dbDetails.Id,
-		"email":    dbDetails.Email,
-		"password": dbDetails.Password,
+		"id":       dbdetail.Id,
+		"email":    dbdetail.Email,
+		"password": dbdetail.Password,
 	})
 
 	hmacSampleSecret = []byte(os.Getenv("KEY"))
@@ -44,8 +50,7 @@ func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
 	return tokenString, nil
 }
 
-func (dbUser SqlUserService) Auth(tokenString string) (eplaza.Auth, error) {
-	var Details eplaza.Auth
+func (dbUser SqlUserService) Auth(tokenString string) error {
 	hmacSampleSecret = []byte(os.Getenv("KEY"))
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -59,23 +64,41 @@ func (dbUser SqlUserService) Auth(tokenString string) (eplaza.Auth, error) {
 	})
 
 	if err != nil {
-		return eplaza.Auth{}, err
+		return err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		Details.Id = claims["id"].(string)
-		Details.Email = claims["email"].(string)
-		Details.Password = claims["password"].(string)
+		authDetail.Email = claims["email"].(string)
+		authDetail.Password = claims["password"].(string)
+		// fmt.Println(authDetail.Email, authDetail.Password)
 
 	} else {
-		return eplaza.Auth{}, err
+		return err
 	}
 
-	// return Details, nil
-	return Details, nil
+	// return detail, nil
+	return nil
 }
 
-func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
+func (dbUser SqlUserService) AuthOne(id string) error {
+
+    err := dbUser.DB.Get(&user, "SELECT * FROM users WHERE id=?", id)
+
+	if err != nil {
+		fmt.Println(authDetail.Email)
+		return err
+	}
+	
+    if user.Email == authDetail.Email && user.Password == authDetail.Password{
+		return nil
+	}
+
+	panic("You're not authenticated")
+	
+
+}
+
+func (dbUser SqlUserService) SignUp(user *eplaza.User) error {
 
 	//Get uuid values
 	id := fmt.Sprintln(uuid.NewString())
@@ -100,8 +123,6 @@ func (dbUser SqlUserService) CreateUser(user *eplaza.User) error {
 }
 
 func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
-	var user = eplaza.User{}
-
 	//statement
 	err := dbUser.DB.Get(&user, "SELECT * FROM users WHERE id=?", id)
 	if err != nil {
@@ -112,8 +133,8 @@ func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
 	return user, nil
 }
 
-func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
-	users := []eplaza.User{}
+func (dbUser SqlUserService) GetAllUsers() ([]*eplaza.User, error) {
+	users := []*eplaza.User{}
 
 	err := dbUser.DB.Select(&users, "SELECT * FROM users ORDER BY first_name ASC")
 	if err != nil {
