@@ -43,7 +43,7 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"message":` + err.Error() + ", " + token + "}"))
 
 	} else {
-		w.Write([]byte(token))
+		w.Write([]byte(`{"message":` + token + `}`))
 	}
 
 }
