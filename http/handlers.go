@@ -30,10 +30,9 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Assign SqlUserService with the db connection
-	conn := database.SqlUserService{
+	var userConn eplaza.UserService = database.SqlUserService{
 		DB: db,
 	}
-	var userConn eplaza.UserService = conn
 
 	defer db.Close()
 	//call the SignIn method
@@ -134,10 +133,9 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 
 		}
 		//Assign SqlUserService with the db connection
-		conn := database.SqlUserService{
+		var userConn eplaza.UserService = database.SqlUserService{
 			DB: db,
 		}
-		var userConn eplaza.UserService = conn
 		defer db.Close()
 
 		//Create User
@@ -169,10 +167,9 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Assign SqlUserService with the db connection
-	conn := database.SqlUserService{
+	var userConn eplaza.UserService = database.SqlUserService{
 		DB: db,
 	}
-	var userConn eplaza.UserService = conn
 
 	//Get A User
 	user, err := userConn.GetUser(userID)
@@ -191,12 +188,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	db, err := database.Connection()
 	if err != nil {
-		w.WriteHeader(500)//Assign SqlUserService with the db connection		
+		w.WriteHeader(500) //Assign SqlUserService with the db connection
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
 	}
 
 	//Assign SqlUserService with the db connection
-	var userConn eplaza.UserService =database.SqlUserService{
+	var userConn eplaza.UserService = database.SqlUserService{
 		DB: db,
 	}
 	users, err := userConn.GetAllUsers()
@@ -245,9 +242,9 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
 
 	}
-	
+
 	//Assign SqlUserService with the db connection
-	var userConn eplaza.UserService =database.SqlUserService{
+	var userConn eplaza.UserService = database.SqlUserService{
 		DB: db,
 	}
 
@@ -277,10 +274,10 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Assign SqlUserService with the db connection
-	var userConn eplaza.UserService =database.SqlUserService{
+	var userConn eplaza.UserService = database.SqlUserService{
 		DB: db,
 	}
-	
+
 	err = userConn.DeleteUser(userID)
 	if err != nil {
 		w.WriteHeader(200)
