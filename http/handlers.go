@@ -33,9 +33,11 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 	conn := database.SqlUserService{
 		DB: db,
 	}
+	var userConn eplaza.UserService = conn
+
 	defer db.Close()
 	//call the SignIn method
-	token, err := conn.SignIn(auth)
+	token, err := userConn.SignIn(auth)
 
 	if err != nil {
 		w.WriteHeader(500)
@@ -117,7 +119,10 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 	//Validate the data
 	err = user.Validate()
 
-	//Create database connection
+	//Create database connection//authentication
+	// Auth(data string)error
+	// //authentication
+	// AuthOne(data string)error
 	if err != nil {
 		w.WriteHeader(400)
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
@@ -132,10 +137,11 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 		conn := database.SqlUserService{
 			DB: db,
 		}
+		var userConn eplaza.UserService = conn
 		defer db.Close()
 
 		//Create User
-		err = conn.SignUp(&user)
+		err = userConn.SignUp(user)
 		if err != nil {
 			w.WriteHeader(500)
 			w.Write([]byte(`{"message":` + err.Error() + "}"))
@@ -152,7 +158,7 @@ func signUp(w http.ResponseWriter, r *http.Request) {
 func getUser(w http.ResponseWriter, r *http.Request) {
 	userID := chi.URLParam(r, "userID")
 	// fetch `"key"` from the request context
-	// ctx := r.Context()
+	// ctx := r.Context()//authentication
 	// key := ctx.Value("key").(string)
 
 	db, err := database.Connection()
@@ -166,9 +172,10 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	conn := database.SqlUserService{
 		DB: db,
 	}
+	var userConn eplaza.UserService = conn
 
 	//Get A User
-	user, err := conn.GetUser(userID)
+	user, err := userConn.GetUser(userID)
 
 	if err != nil {
 		w.WriteHeader(500)
@@ -180,19 +187,19 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//This handler all users
+//This handler all usersAuthOne(data string)error
 func getAllUsers(w http.ResponseWriter, r *http.Request) {
 	db, err := database.Connection()
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(500)//Assign SqlUserService with the db connection		
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
-
 	}
 
-	conn := database.SqlUserService{
+	//Assign SqlUserService with the db connection
+	var userConn eplaza.UserService =database.SqlUserService{
 		DB: db,
 	}
-	users, err := conn.GetAllUsers()
+	users, err := userConn.GetAllUsers()
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
@@ -238,13 +245,13 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
 
 	}
-
+	
 	//Assign SqlUserService with the db connection
-	conn := database.SqlUserService{
+	var userConn eplaza.UserService =database.SqlUserService{
 		DB: db,
 	}
 
-	err = conn.UpdateUser(&user)
+	err = userConn.UpdateUser(user)
 	if err != nil {
 		w.WriteHeader(500)
 		w.Write([]byte(`{"message":` + err.Error() + "}"))
@@ -270,15 +277,12 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Assign SqlUserService with the db connection
-	conn := database.SqlUserService{
+	var userConn eplaza.UserService =database.SqlUserService{
 		DB: db,
 	}
-
-	err = conn.DeleteUser(userID)
+	
+	err = userConn.DeleteUser(userID)
 	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte(`{"message":` + err.Error() + "}"))
-	} else {
 		w.WriteHeader(200)
 		w.Write([]byte(`{"message": "User deleted successfully"}`))
 	}

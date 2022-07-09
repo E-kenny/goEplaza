@@ -23,6 +23,7 @@ var authDetail eplaza.Auth
 
 var user eplaza.User
 
+//Authentication
 func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
 	var dbdetail eplaza.Auth
 	//statement
@@ -50,6 +51,7 @@ func (dbUser SqlUserService) SignIn(auth eplaza.Auth) (string, error) {
 	return tokenString, nil
 }
 
+//Authorization
 func (dbUser SqlUserService) Auth(tokenString string) error {
 	hmacSampleSecret = []byte(os.Getenv("KEY"))
 
@@ -80,6 +82,7 @@ func (dbUser SqlUserService) Auth(tokenString string) error {
 	return nil
 }
 
+//Authorization
 func (dbUser SqlUserService) AuthOne(id string) error {
 
     err := dbUser.DB.Get(&user, "SELECT * FROM users WHERE id=?", id)
@@ -98,7 +101,8 @@ func (dbUser SqlUserService) AuthOne(id string) error {
 
 }
 
-func (dbUser SqlUserService) SignUp(user *eplaza.User) error {
+//Sign up
+func (dbUser SqlUserService) SignUp(user eplaza.User) error {
 
 	//Get uuid values
 	id := fmt.Sprintln(uuid.NewString())
@@ -122,6 +126,7 @@ func (dbUser SqlUserService) SignUp(user *eplaza.User) error {
 	return nil
 }
 
+//Get user
 func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
 	//statement
 	err := dbUser.DB.Get(&user, "SELECT * FROM users WHERE id=?", id)
@@ -133,8 +138,9 @@ func (dbUser SqlUserService) GetUser(id string) (eplaza.User, error) {
 	return user, nil
 }
 
-func (dbUser SqlUserService) GetAllUsers() ([]*eplaza.User, error) {
-	users := []*eplaza.User{}
+//Get all users
+func (dbUser SqlUserService) GetAllUsers() ([]eplaza.User, error) {
+	users := []eplaza.User{}
 
 	err := dbUser.DB.Select(&users, "SELECT * FROM users ORDER BY first_name ASC")
 	if err != nil {
@@ -145,7 +151,8 @@ func (dbUser SqlUserService) GetAllUsers() ([]*eplaza.User, error) {
 	return users, nil
 }
 
-func (dbUser SqlUserService) UpdateUser(user *eplaza.User) error {
+//Update user
+func (dbUser SqlUserService) UpdateUser(user eplaza.User) error {
 
 	_, err := dbUser.DB.Queryx(`UPDATE users SET first_name = ? , last_name = ? WHERE id=?`, user.FirstName, user.LastName, user.Id)
 
@@ -154,6 +161,8 @@ func (dbUser SqlUserService) UpdateUser(user *eplaza.User) error {
 	}
 	return nil
 }
+
+//Delete user
 func (dbUser SqlUserService) DeleteUser(id string) error {
 	_, err := dbUser.DB.Queryx("DELETE FROM users WHERE id=?", id)
 	if err != nil {

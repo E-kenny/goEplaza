@@ -26,21 +26,17 @@ func (a User) Validate() error {
 
 type UserService interface {
 	//create user
-	CreateUser(u *User) error
+	SignUp(u User) error
 	//get user
-	GetUser(id string) (*User, error)
+	GetUser(id string) (User, error)
 	//Get all users
-	GetAllUsers() ([]*User, error)
+	GetAllUsers() ([]User, error)
 	//update user
-	UpdateUser(id *User) error
+	UpdateUser(id User) error
 	//delete user
 	DeleteUser(id string) error
 	//Sign in user
-	SignIn(user Auth) string
-	//authentication
-	Auth(data string)error
-	//authentication
-	AuthOne()error
+	SignIn(auth Auth) (string, error)
 }
 
 //claims object
